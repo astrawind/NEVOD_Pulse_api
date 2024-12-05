@@ -1,4 +1,4 @@
-from src.models import Settings
+from src.schemas import Settings
 
 class ApiSettings(Settings):
     API_HOST: str

@@ -3,11 +3,11 @@ from typing import List, Optional
 from datetime import datetime
 
 class TimeRange(BaseModel):
-    start: Optional[datetime] = Field(..., default=datetime(1970, 1, 1), description="Дата и время начала интересующего периода времени в формате YYYY-MM-DD HH:MM:SS") #Default - Linux low date value
-    end: Optional[datetime] = Field(..., default_factory=datetime.now, description="Дата и время конца интересующего периода времени в формате YYYY-MM-DD HH:MM:SS")
+    start: Optional[datetime] = Field(datetime(1970, 1, 1), description="Дата и время начала интересующего периода времени в формате YYYY-MM-DD HH:MM:SS") #Default - Linux low date value
+    end: Optional[datetime|None] = Field(..., default_factory=datetime.now, description="Дата и время конца интересующего периода времени в формате YYYY-MM-DD HH:MM:SS")
 
 class Page(BaseModel):
-    page: Optional[int] = Field(..., default=0, description="Номер интересующей страницы")
+    page: Optional[int] = Field(0, description="Номер интересующей страницы")
     limit: int = Field(..., description="Количество записей на каждой странице")
 
 class ParameterData(BaseModel):

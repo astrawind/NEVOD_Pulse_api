@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from src.clean_zone.v1.repository import ParameterRepository
-from src.clean_zone.v1.schemas import Parameter, TimeRange, ParameterData
+from src.clean_zone.v1.schemas import Parameter, TimeRange, ParameterData, Pagination
 
 router = APIRouter(
     prefix="/clean_zone/v1/data",
@@ -17,8 +17,8 @@ async def get_parameter(parameter_id: int) -> Parameter:
 
 
 @router.get("/parameters", description="Получение значений таблицы Parameters за определенный промежуток времени")
-async def get_paraeters(timeline: TimeRange = Depends()) -> list[Parameter]:
-    params = ParameterRepository.get_parameters(timeline)
+async def get_paraeters(timeline: TimeRange = Depends(), pagination: Pagination = Depends()) -> list[Parameter]:
+    params = ParameterRepository.get_parameters(timeline, pagination)
     return params
 
 @router.get("/paramerers/avg", description="Получение средних значений таблицы Parameters за интересующий промежуток времени")

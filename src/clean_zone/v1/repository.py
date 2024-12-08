@@ -3,15 +3,15 @@ from sqlalchemy.sql import func
 from typing import Callable, Generator
 
 from .database import cz_connection_maker as get_connection
-from .schemas import Parameter, TimeRange, ParameterData
+from .schemas import Parameter, TimeRange, ParameterData, Pagination
 from .models import Parameter as ParameterOrm
 
 class ParameterRepository:
     
     @classmethod
-    def get_parameters(cls, timeline: TimeRange, get_conn: Generator = get_connection) -> list[Parameter]:
+    def get_parameters(cls, timeline: TimeRange, pagination: Pagination, get_conn: Generator = get_connection) -> list[Parameter]:
         with get_conn() as conn:
-            query = select(ParameterOrm).where(ParameterOrm.date_time.between(timeline.start, timeline.end))
+            query = select(ParameterOrm).where(ParameterOrm.date_time.between(timeline.start, timeline.end)).order_by(ParameterOrm.date_time).limit(pagination.limit).offset(pagination.limit*pagination.page)
             result = conn.execute(query)
             parameters = result.scalars().all()
             res_params = [Parameter.model_validate(param.model_dump()) for param in parameters]

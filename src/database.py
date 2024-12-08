@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from contextlib import AbstractContextManager
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 import logging
 from .exceptions import DataBaseError
 
@@ -59,9 +59,10 @@ class PostresConnectionMaker():
     def __init__(self, username, password, host, port, databasename):
         logger.debug('creating Postgres engine')
         self.engine = create_engine(f'postgresql://{username}:{password}@{host}:{port}/{databasename}')
+        self.maker = sessionmaker(self.engine, expire_on_commit=False)
 
     def __call__(self):
         try:
-            return Session(self.engine)
+            return self.maker()
         except Exception as e:
-            raise DataBaseError(e)
+            raise DataBaseError(str(e))

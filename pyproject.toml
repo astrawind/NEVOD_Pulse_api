@@ -13,6 +13,7 @@ pydantic-settings = "^2.6.1"
 uvicorn = "^0.32.1"
 sqlmodel = "^0.0.22"
 backoff = "^2.2.1"
+psycopg2-binary = "^2.9.10"
 
 
 [build-system]

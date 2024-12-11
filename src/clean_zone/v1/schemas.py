@@ -7,7 +7,7 @@ class TimeRange(BaseModel):
     end: Optional[datetime|None] = Field(..., default_factory=datetime.now, description="Дата и время конца интересующего периода времени в формате YYYY-MM-DD HH:MM:SS")
 
 class Pagination(BaseModel):
-    page: Optional[int] = Field(0, description="Номер интересующей страницы")
+    page: Optional[int] = Field(0, description="Номер конкретной страницы")
     limit: int = Field(..., description="Количество записей на каждой странице")
 
 class ParameterData(BaseModel):

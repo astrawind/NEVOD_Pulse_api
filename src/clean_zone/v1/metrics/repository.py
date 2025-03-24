@@ -9,7 +9,9 @@ class CZParametersMetrics:
     def __init__(self, holder = metrics):
         self._metrics = {"t_1" :Gauge('cz_parameters_temperature_room_1_celsius', 'Температура помещения 1', registry=holder.get_registry()),
                     "t_2" :Gauge('cz_parameters_temperature_room_2_celsius', 'Температура помещения 2', registry=holder.get_registry()),
-                    "t_3" :Gauge('cz_parameters_temperature_room_3_celsius', 'Температура помещения 3', registry=holder.get_registry())}
+                    "t_3" :Gauge('cz_parameters_temperature_room_3_celsius', 'Температура помещения 3', registry=holder.get_registry()),
+                    "t_4" :Gauge('cz_parameters_temperature_room_4_celsius', 'Температура помещения 4', registry=holder.get_registry()),
+                    }
         self.holder = holder
 
 #    def __setattr__(self, name, value):

@@ -1,5 +1,5 @@
 from src.metrics import GaugeMetricCollector
-from infrastructure import HVHandler
+from .infrastructure import HVHandler
 from datetime import datetime, timedelta
 from .config import settings
 from .utils import make_unique_metric_alias
@@ -10,7 +10,7 @@ class HVMetricService:
         self._controller: HVHandler = controller
         
     def collect_last_metrics(self) -> dict:
-        last_record = self._repository.get_last_record(datetime.now().date())
+        last_record = self._controller.get_last_record(datetime.now().date())
         if last_record is None or (datetime.now() - last_record.time > timedelta(seconds=settings.HV_STEP)):
             return None
         result = dict()

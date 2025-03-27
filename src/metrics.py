@@ -14,9 +14,9 @@ class MetricHolder():
 class GaugeMetricCollector:
     def __init__(self, metrics: list[tuple], metric_holder: MetricHolder=None):
         if metric_holder is None:
-            metric_holder = MetricHolder()
+            self._holder = MetricHolder()
         elif metric_holder.isinstance(MetricHolder):
-            self.holder = metric_holder
+            self._holder = metric_holder
         else:
             raise TypeError('wrong registry type')
         self._metrics = self._create_gauges(metrics)
@@ -27,7 +27,7 @@ class GaugeMetricCollector:
             alias: Gauge(
                 name=metric_name,
                 documentation=metric_description,
-                registry=self._metric_holder.get_registry()
+                registry=self._holder.get_registry()
             )
             for alias, metric_name, metric_description in metrics
         }
@@ -42,4 +42,4 @@ class GaugeMetricCollector:
                     self._metrics[key].set(metric_container[key])
 
     def get_metrics(self):
-        return self.holder.get_metrics()
+        return self._holder.get_metrics()

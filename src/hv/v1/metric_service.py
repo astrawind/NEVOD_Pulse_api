@@ -11,16 +11,16 @@ class HVMetricService:
         
     def collect_last_metrics(self) -> dict:
         last_record = self._controller.get_last_record(datetime.now().date())
-        if last_record is None or (datetime.now() - last_record.time > timedelta(seconds=settings.HV_STEP)):
+        if False and (last_record is None or (datetime.now() - last_record.time > timedelta(seconds=settings.HV_STEP))):
             return None
         result = dict()
         for chan in last_record.chans:
-            chan_dict = chan.model_dump()
-            chan_name = chan_dict['hv_chan']
+            chan_dict = chan.model_dump(by_alias=True)
+            chan_name = chan_dict['HVchan']
             for atr_name in chan_dict:
-                if atr_name == 'hv_chan':
+                if atr_name == 'HVchan':
                     continue
-            result[make_unique_metric_alias(chan_name, atr_name)] = chan_dict[atr_name]
+                result[make_unique_metric_alias(chan_name, atr_name)] = chan_dict[atr_name]
         return result
     
     def process_metrics(self, metrics: dict):

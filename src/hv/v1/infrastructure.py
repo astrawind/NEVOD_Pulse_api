@@ -21,13 +21,17 @@ class HVHandler:
             return None
         line = next(hv_items_generator)
         if not 'Time=' in line:
-            raise CorruptedFile(f'last lines of {self.filename}/hv{self.date.year}{self.date.month}{self.date.day} is corrupted')
+            raise CorruptedFile(f'last lines of {self.dir}/hv{date.year}{date.month}{date.day} is corrupted')
         time, step = line.split('=')[1].split(' , ')
         time = datetime.strptime(time, "%d-%m-%Y %H:%M:%S")
         line = next(hv_items_generator)
         headers = [header.strip() for header in line.split('\t')]
         hv_chanels = list()
         for chanel in hv_items_generator:
+            if 'DECOR12-15' in chanel:
+                chanel.replace('DECOR12-15', 'DECOR12_15')
+            if 'DECOR00-03' in chanel:
+                chanel.replace('DECOR00-03', 'DECOR00_03')
             chanel_info = [metric.strip() for metric in chanel.split('\t')]
             hv_chanels.append(HVChan(**dict(zip(headers, chanel_info))))
         return HVItem(time=time, step=step, chans=hv_chanels)

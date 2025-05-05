@@ -14,11 +14,11 @@ router = APIRouter(
 )
 
 files_handler = HVHandler(settings.HV_DIRECTORY)
-metric_collector = HVMetricCollector(["Uragan01", "Uragan02", "Uragan03", "Uragan04", "DECOR00", "DECOR12", "DECOR04", "DECOR08"],
+metric_collector = HVMetricCollector(["Uragan01", "Uragan02", "Uragan03", "Uragan04", "DECOR00_03", "DECOR12_15", "DECOR04", "DECOR08"],
                                      ["Vmon", "Imon", "V0set", "I0set"], ["volt", "ampere", "volt", "ampere"])
 service = HVMetricService(metric_collector, files_handler)
 
 @router.get("/", description="Получение метрик")
-async def get_hv_metrics():
+async def get_high_voltage_metrics():
     service.update_last_metrics()
     return Response(content=service.get_last_metrics(), media_type=CONTENT_TYPE_LATEST)

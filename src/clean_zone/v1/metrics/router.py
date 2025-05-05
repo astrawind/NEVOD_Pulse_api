@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 @router.get("/", description="Получение метрик")
-async def get_parameter():
+async def get_clean_zone_metrics():
     page = Pagination(page=0, limit=3)
     scrape_time = datetime.now()
     scrape_time = scrape_time.replace(year=scrape_time.year - 1)

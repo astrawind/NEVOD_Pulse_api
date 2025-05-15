@@ -1,6 +1,9 @@
-from prometheus_client import generate_latest, CollectorRegistry, Gauge
+from prometheus_client import generate_latest, CollectorRegistry, Gauge, Histogram
+from abc import ABC, abstractmethod
+from src.schemas import MetricDefinition, Metric
 
 class MetricHolder():
+    #depricated MetricRegistry
 
     def __init__(self):
         self.registry = CollectorRegistry()
@@ -12,6 +15,7 @@ class MetricHolder():
         return generate_latest(self.registry)
     
 class GaugeMetricCollector:
+    #depricated MetricManager
     def __init__(self, metrics: list[tuple], metric_holder: MetricHolder=None):
         if metric_holder is None:
             self._holder = MetricHolder()
@@ -43,3 +47,93 @@ class GaugeMetricCollector:
 
     def get_metrics(self):
         return self._holder.get_metrics()
+    
+class MetricRegistry():
+
+    def __init__(self):
+        self.registry = CollectorRegistry()
+
+    def get_registry(self):
+        return self.registry
+    
+    def get_metrics(self):
+        return generate_latest(self.registry)
+    
+class MetricManager(ABC):
+    
+    def __init__(self, metrics_definitions: list[MetricDefinition], metric_registry: MetricRegistry | None = None):
+        if metric_registry is None:
+            self._holder = MetricRegistry()
+        elif metric_registry.isinstance(MetricRegistry):
+            self._holder = metric_registry
+        else:
+            raise TypeError('wrong registry type')
+        
+        self._metrics = self._create_metrics(metrics_definitions)
+    
+    @abstractmethod
+    def _create_metrics(self, metrics_definitions: list[MetricDefinition]):
+        pass
+    
+    @abstractmethod
+    def put_metrics(self, metric_container: dict|None):
+        pass
+    
+    def get_metrics(self):
+        return self._holder.get_metrics()
+    
+    
+    
+class GaugeManager:
+    
+    def __init__(
+        self, 
+        metrics_definitions: list[tuple],
+        metric_registry: MetricRegistry | None = None
+        ):
+        super().__init__(metrics_definitions, metric_registry)
+        
+    def _create_metrics(self, metrics_definitions):
+        return self._create_gauges(self, metrics_definitions)
+    
+    def _create_gauges(self, metrics):
+        return {
+            metric.name: Gauge(
+                name=metric.name,
+                documentation=metric.description,
+                labelnames=metric.labels,
+                registry=self._holder.get_registry()
+            )
+            for metric in metrics
+        }
+
+    def put_metrics(self, metric_container: list[Metric]|None):
+        if metric_container is None:
+            for key in self._metrics:
+                self._metrics[key].set(0)
+        else:
+            for metric in metric_container:
+                if metric.name in self._metrics:
+                    if metric.labels:
+                        self._metrics[metric.name].labels(*metric.labels).set(metric.value)
+                    else:
+                        self._metrics[metric.name].set(metric_container[metric.value])
+                        
+                        
+class MetricService(ABC):
+    def __init__(self, metric: MetricManager):
+        self._metrics: GaugeManager = metric
+        
+    @abstractmethod
+    def collect_last_metrics(self):
+        pass
+    
+    def process_metrics(self, metrics: list[Metric]):
+        self._metrics.put_metrics(metrics)
+        
+    def update_last_metrics(self):
+        metrics = self.collect_last_metrics()
+        self.process_metrics(metrics)
+        
+    def get_last_metrics(self):
+        return self._metrics.get_metrics()

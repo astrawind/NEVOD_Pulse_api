@@ -7,58 +7,25 @@ import logging
 from .exceptions import DataBaseError
 
 import backoff
+from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-# class DataBaseConnection(AbstractContextManager):
-#     def __init__(self, ):
-#         self._connection = None
-
-#     def __enter__(self):
-#         self.connect()
-#         return self
-    
-#     @abstractmethod
-#     def _get_connection(): ...
-
-#     @abstractmethod
-#     def _delete_connection(): ...
-
-#     def __exit__(self, exc_type, exc_value, traceback):
-#         self.disconnect()
-
-#     @backoff.on_exception(backoff.expo, ConnectionError, max_time=10)
-#     def connect(self):
-#         if self._connection is None:
-#             self._connection = self._get_connection()
-#         return self._connection
-
-#     def disconnect(self):
-#         if self._connection is not None:
-#             self._delete_connection(self._connection)
-#             self._connection = None
-
-# class PostgresConnection(DataBaseConnection):
-#     def __init__(self, username, password, host, port, databasename):
-#         super().__init__(self)
-#         self.__url = f'postgresql://{username}:{password}@{host}:{port}/{databasename}'
-
-#     def _get_connection(self):
-#         engine = create_engine(self.__url)
-#         return Session(engine)
-    
-#     def _delete_connection(self):
-#         self._connection.close()
-
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-class PostresConnectionMaker():
+class DatabaseConnectionMaker(ABC):
+    @abstractmethod
+    def __call__(self):
+        pass
 
-    def __init__(self, username, password, host, port, databasename):
+class PostresConnectionMaker(DatabaseConnectionMaker):
+
+    def __init__(self, username, password, host, port, databasename, pool_size=5):
         logger.debug('creating Postgres engine')
-        self.engine = create_engine(f'postgresql://{username}:{password}@{host}:{port}/{databasename}')
+        self.engine = create_engine(f'postgresql://{username}:{password}@{host}:{port}/{databasename}', pool_size=pool_size)
         self.maker = sessionmaker(self.engine, expire_on_commit=False)
 
     def __call__(self):
@@ -66,3 +33,14 @@ class PostresConnectionMaker():
             return self.maker()
         except Exception as e:
             raise DataBaseError(str(e))
+        
+class MongoConnectionMaker(DatabaseConnectionMaker):
+    def __init__(self, username, password, host, port, databasename, pool_size=100):
+        self._client = MongoClient(
+            f"mongodb://{username}:{password}@{host}:{port}/",
+            maxPoolSize=pool_size
+        )
+        self._databasename = databasename
+        
+    def __call__(self):
+        return self._client[self._databasename]

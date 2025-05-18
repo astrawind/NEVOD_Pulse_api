@@ -4,6 +4,8 @@ from .repository import EASRepository
 from src.metrics import GaugeManager, MetricRegistry
 from .metric_service import EASMetricService
 from fastapi import Depends
+from src.metrics import MetricDefinition
+from .utils import make_metric_definitions, get_eas_metric_alias
 
 connection_maker = MongoConnectionMaker(settings.EAS_MONGO_USERNAME,
                                         settings.EAS_MONGO_PASSWORD,
@@ -19,9 +21,9 @@ def create_metric_registry() -> MetricRegistry:
     return MetricRegistry()
 
 def create_gauge_manager(registry: MetricRegistry = Depends(create_metric_registry)) -> GaugeManager:
-    metrics_definitions = [
-        ('quality_rate', 'persents', ['cluster'])
-    ]
+    metrics_definitions = make_metric_definitions([
+        (('quality_rate', 'persents'), '{Number of "good" events} / {number of all events}', ('cluster'))
+    ])
     return GaugeManager(metrics_definitions, registry)
 
 def create_metric_service(

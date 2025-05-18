@@ -5,9 +5,14 @@ from .utils import get_eas_metric_alias
 from .config import settings
 from datetime import datetime, timedelta
 
-def make_metric(metric_name, units, cluser, value) -> Metric:
+def make_metric(metric_name, cluser, value) -> Metric:
+    if cluser is None:
+        return Metric(
+            alias=metric_name,
+            value=value
+            )
     return Metric(
-        name=get_eas_metric_alias(metric_name, units),
+        alias=metric_name,
         labels=(cluser,),
         value=value
         )
@@ -20,8 +25,15 @@ class EASMetricService(MetricService):
         self.time_delay = time_delay
         
     def collect_last_metrics(self) -> list[Metric]:
-        quality_rates = self.db.get_quality_rate(datetime.now() - timedelta(seconds=self.time_delay))
-        quality_metrics = [make_metric('quality_rate', 'persents', rate["cluster"], rate["value"]) for rate in quality_rates]
+        quality_rates = self._db.get_quality_rates(datetime.now() - timedelta(seconds=self.time_delay), datetime.now())
+        quality_metrics = self._prepare_metric('quality_rate', quality_rates)
         return quality_metrics
     
+    def _prepare_metric(self, metric_name, container):
+        print(container)
+        if container is None:
+            result = [make_metric(metric_name, None, 0)]
+        else:
+            result = [make_metric(metric_name, rate["cluster"], rate["value"]) for rate in container]
+        return result
     

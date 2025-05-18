@@ -64,7 +64,7 @@ class MetricManager(ABC):
     def __init__(self, metrics_definitions: list[MetricDefinition], metric_registry: MetricRegistry | None = None):
         if metric_registry is None:
             self._holder = MetricRegistry()
-        elif metric_registry.isinstance(MetricRegistry):
+        elif isinstance(metric_registry, MetricRegistry):
             self._holder = metric_registry
         else:
             raise TypeError('wrong registry type')
@@ -84,21 +84,22 @@ class MetricManager(ABC):
     
     
     
-class GaugeManager:
+class GaugeManager(MetricManager):
     
     def __init__(
         self, 
-        metrics_definitions: list[tuple],
+        metrics_definitions: list[MetricDefinition],
         metric_registry: MetricRegistry | None = None
         ):
         super().__init__(metrics_definitions, metric_registry)
         
     def _create_metrics(self, metrics_definitions):
-        return self._create_gauges(self, metrics_definitions)
+        return self._create_gauges(metrics_definitions)
     
     def _create_gauges(self, metrics):
+        print(metrics)
         return {
-            metric.name: Gauge(
+            metric.alias: Gauge(
                 name=metric.name,
                 documentation=metric.description,
                 labelnames=metric.labels,
@@ -108,16 +109,16 @@ class GaugeManager:
         }
 
     def put_metrics(self, metric_container: list[Metric]|None):
-        if metric_container is None:
+        if metric_container is not None:
             for key in self._metrics:
                 self._metrics[key].set(0)
         else:
             for metric in metric_container:
-                if metric.name in self._metrics:
+                if metric.alias in self._metrics:
                     if metric.labels:
-                        self._metrics[metric.name].labels(*metric.labels).set(metric.value)
+                        self._metrics[metric.alias].labels(*metric.labels).set(metric.value)
                     else:
-                        self._metrics[metric.name].set(metric_container[metric.value])
+                        self._metrics[metric.alias].set(metric.value)
                         
                         
 class MetricService(ABC):

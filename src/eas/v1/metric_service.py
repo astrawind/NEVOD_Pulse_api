@@ -30,10 +30,9 @@ class EASMetricService(MetricService):
         return quality_metrics
     
     def _prepare_metric(self, metric_name, container):
-        print(container)
-        if container is None:
-            result = [make_metric(metric_name, None, 0)]
-        else:
+        if container is not None:
             result = [make_metric(metric_name, rate["cluster"], rate["value"]) for rate in container]
+        else:
+            result = None
         return result
     

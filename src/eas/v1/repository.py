@@ -9,11 +9,11 @@ class EASRepository:
     def get_quality_rates(self, left_time_range: datetime, right_time_range: datetime):
         db = self.get_connection()
         date_prefix = f'{left_time_range}'[:10]
-        collection = db[f'2022-12-28_e']
+        collection = db[f'{date_prefix}_e']
         min_time = left_time_range - datetime.combine(left_time_range.date(), time())
-        min_time_ns = min_time.total_seconds() * 1000000000
+        min_time_ns = (min_time.total_seconds() * 1000000000) + 6000000000000
         max_time = right_time_range - datetime.combine(right_time_range.date(), time())
-        max_time_ns = max_time.total_seconds() * 1000000000
+        max_time_ns = (max_time.total_seconds() * 1000000000) + 6000000000000
         pipeline = [
      {
         "$match": {

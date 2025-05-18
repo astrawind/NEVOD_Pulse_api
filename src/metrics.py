@@ -109,10 +109,7 @@ class GaugeManager(MetricManager):
         }
 
     def put_metrics(self, metric_container: list[Metric]|None):
-        if metric_container is not None:
-            for key in self._metrics:
-                self._metrics[key].set(0)
-        else:
+        if not metric_container is None:
             for metric in metric_container:
                 if metric.alias in self._metrics:
                     if metric.labels:

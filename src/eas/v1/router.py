@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime, timedelta
 from prometheus_client import CONTENT_TYPE_LATEST
 from fastapi.responses import Response
-from .dependencies import create_metric_service
+from .dependencies import create_metric_service, create_histogram_metric_service
 from .metric_service import EASMetricService
 
 router = APIRouter(
@@ -14,6 +14,13 @@ router = APIRouter(
 @router.get("/", description="Получение метрик")
 async def get_eas_metrics(
     service: EASMetricService = Depends(create_metric_service)
+):
+    service.update_last_metrics()
+    return Response(content=service.get_last_metrics(), media_type=CONTENT_TYPE_LATEST)
+
+@router.get("/histogram", description="Получение гистограммы")
+async def get_eas_histogram_metrics(
+    service: EASMetricService = Depends(create_histogram_metric_service)
 ):
     service.update_last_metrics()
     return Response(content=service.get_last_metrics(), media_type=CONTENT_TYPE_LATEST)

@@ -1,10 +1,10 @@
 from .config import settings
 from src.database import MongoConnectionMaker
 from .repository import EASRepository
-from src.metrics import GaugeManager, MetricRegistry
-from .metric_service import EASMetricService
+from src.metrics import GaugeManager, HistogramManager, MetricRegistry
+from .metric_service import EASMetricService, EASMetricHistogramService
 from fastapi import Depends
-from src.metrics import MetricDefinition
+from src.metrics import MetricDefinition, HistogramMetricDefinition
 from .utils import make_metric_definitions, get_eas_metric_alias
 
 connection_maker = MongoConnectionMaker(settings.EAS_MONGO_USERNAME,
@@ -34,4 +34,17 @@ def create_metric_service(
         db=repo,
         metric=gauge,
         time_delay=settings.EAS_DELAY
+    )
+    
+def create_histogram_manager(registry: MetricRegistry = Depends(create_metric_registry)) -> HistogramManager:
+    metrics_definitions = [HistogramMetricDefinition('q_distribution', 'eas_q_distribution_coulombs', 'distributions of charge in eas', ('cluster', 'ds'), list(range(51)))]
+    return HistogramManager(metrics_definitions, registry)
+
+def create_histogram_metric_service(
+    repo: EASRepository = Depends(create_repository),
+    hist: HistogramManager = Depends(create_histogram_manager)
+) -> EASMetricHistogramService:
+    return EASMetricHistogramService(
+        db=repo,
+        metric=hist,
     )

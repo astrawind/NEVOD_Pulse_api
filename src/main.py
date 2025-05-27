@@ -10,7 +10,7 @@ def create_app() -> FastAPI:
         title="NEVOD Pulse",
         version="1.0",
         description="API для установок НОЦ НЕВОД",
-        docs_url="/",
+        docs_url="/docs",
     )
     app.include_router(cz_router)
     app.include_router(cz_metric_router)

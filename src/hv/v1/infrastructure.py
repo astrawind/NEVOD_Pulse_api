@@ -18,7 +18,7 @@ class HVHandler:
 
     def get_last_record(self, date) -> HVItem:
         try:
-            hv_items_generator = read_last_lines(f'{self.dir}/hv{date.year}{date.month}{date.day}.log')
+            hv_items_generator = read_last_lines(f'{self.dir}/hv{date.year}{date.month:02}{date.day}.log')
         except FileNotFoundError:
             return None
         line = next(hv_items_generator)

@@ -9,6 +9,8 @@ import os
 class HVHandler:
     
     def __init__(self, file_directory=settings.HV_DIRECTORY):
+        current_date = datetime.now()
+        file_directory = f'{file_directory}/{current_date.year}/{current_date.month}'
         if os.path.exists(file_directory):
             self.dir = file_directory
         else:

@@ -37,7 +37,7 @@ def create_metric_service(
     )
     
 def create_histogram_manager(registry: MetricRegistry = Depends(create_metric_registry)) -> HistogramManager:
-    metrics_definitions = [HistogramMetricDefinition('q_distribution', 'eas_q_distribution_coulombs', 'distributions of charge in eas', ('cluster', 'ds'), list(range(51)))]
+    metrics_definitions = [HistogramMetricDefinition(alias = 'q_distribution', name = 'eas_q_distribution_coulombs', description = 'distributions of charge in eas', labels = ('cluster', 'ds'), buckets = list(range(51)))]
     return HistogramManager(metrics_definitions, registry)
 
 def create_histogram_metric_service(

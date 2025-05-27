@@ -15,3 +15,6 @@ class Metric(BaseModel):
     alias: str = Field(...)
     labels: tuple = Field(default=tuple())
     value: float|int = Field()
+    
+class HistogramMetricDefinition(MetricDefinition):
+    buckets: list[float]

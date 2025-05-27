@@ -1,6 +1,6 @@
 from prometheus_client import generate_latest, CollectorRegistry, Gauge, Histogram
 from abc import ABC, abstractmethod
-from src.schemas import MetricDefinition, Metric
+from src.schemas import MetricDefinition, Metric, HistogramMetricDefinition
 
 class MetricHolder():
     #depricated MetricRegistry
@@ -135,3 +135,36 @@ class MetricService(ABC):
         
     def get_last_metrics(self):
         return self._metrics.get_metrics()
+    
+class HistogramManager(MetricManager):
+    
+    def __init__(
+        self, 
+        metrics_definitions: list[HistogramMetricDefinition],
+        metric_registry: MetricRegistry | None = None
+    ):
+        super().__init__(metrics_definitions, metric_registry)
+        
+    def _create_metrics(self, metrics_definitions):
+        return self._create_histograms(metrics_definitions)
+    
+    def _create_histograms(self, metrics):
+        return {
+            metric.alias: Histogram(
+                name=metric.name,
+                documentation=metric.description,
+                labelnames=metric.labels,
+                buckets=metric.buckets,
+                registry=self._holder.get_registry()
+            )
+            for metric in metrics
+        }
+
+    def put_metrics(self, metric_container: list[Metric] | None):
+        if metric_container is not None:
+            for metric in metric_container:
+                if metric.alias in self._metrics:
+                    if metric.labels:
+                        self._metrics[metric.alias].labels(*metric.labels).observe(metric.value)
+                    else:
+                        self._metrics[metric.alias].observe(metric.value)

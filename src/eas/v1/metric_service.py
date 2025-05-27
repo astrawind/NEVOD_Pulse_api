@@ -1,4 +1,4 @@
-from src.metrics import GaugeManager, MetricService
+from src.metrics import GaugeManager, MetricService, HistogramManager
 from src.schemas import Metric
 from .repository import EASRepository
 from .utils import get_eas_metric_alias
@@ -17,6 +17,13 @@ def make_metric(metric_name, cluser, value) -> Metric:
         value=value
         )
 
+def make_hist_metric(metric_name, cluster, ds, value):
+    return Metric(
+        alias=metric_name,
+        labels=(cluster, ds),
+        value=value
+        )
+    
 class EASMetricService(MetricService):
     
     def __init__(self, db: EASRepository, metric: GaugeManager, time_delay: int):
@@ -32,6 +39,28 @@ class EASMetricService(MetricService):
     def _prepare_metric(self, metric_name, container):
         if container is not None:
             result = [make_metric(metric_name, rate["cluster"], rate["value"]) for rate in container]
+        else:
+            result = None
+        return result
+    
+class EASMetricHistogramService(MetricService):
+    
+    def __init__(self, db: EASRepository, metric: HistogramManager):
+        super().__init__(metric)
+        self._db: EASRepository = db
+        
+    def collect_last_metrics(self) -> list[Metric]:
+        q_values = self._db.get_q_std_values(datetime.now())
+        charge_metrics = self._prepare_metric('q_distribution', q_values)
+        return charge_metrics
+    
+    def _prepare_metric(self, metric_name, container):
+        if container is not None:
+            result = list()
+            for q_valuses in container:
+                cluster = q_valuses['cluster']
+                ds = q_valuses['ds']
+                result.extend([make_hist_metric(metric_name, cluster, ds, value) for value in q_valuses['values']])
         else:
             result = None
         return result

@@ -1,6 +1,7 @@
 from datetime import datetime, time
 from src.database import MongoConnectionMaker
 
+
 class EASRepository:
     
     def __init__(self, connection_maker: MongoConnectionMaker):
@@ -52,5 +53,88 @@ class EASRepository:
             return result
         else:
             return None
+        
+    def get_q_std_values(self, time: datetime):
+            db = self.get_connection()
+            date_prefix = f'{time}'[:10]
+            collection = db[f'{date_prefix}_e']
+            pipeline = [
+                # Фильтрация документов
+                {
+                    "$match": {
+                        "quality": "good",
+                        "stations": {"$exists": True}
+                    }
+                },
+                
+                # Преобразование stations в массив пар ключ-значение
+                {
+                    "$project": {
+                        "cluster": 1,
+                        "ds_entries": {"$objectToArray": "$stations"}
+                    }
+                },
+                
+                # Развертывание массива для обработки каждой записи отдельно
+                {
+                    "$unwind": "$ds_entries"
+                },
+                
+                # Извлечение номера DS из ключа (k) и фильтрация формата ds_*
+                {
+                    "$addFields": {
+                        "ds_number": {
+                            "$let": {
+                                "vars": {
+                                    "parts": {"$split": ["$ds_entries.k", "_"]}
+                                },
+                                "in": {
+                                    "$cond": {
+                                        "if": {"$and": [
+                                            {"$eq": [{"$size": "$$parts"}, 2]},
+                                            {"$eq": [{"$arrayElemAt": ["$$parts", 0]}, "ds"]}
+                                        ]},
+                                        "then": {"$toInt": {"$arrayElemAt": ["$$parts", 1]}},
+                                        "else": None
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                
+                # Фильтрация только валидных DS-номеров и значений q_std >= 0
+                {
+                    "$match": {
+                        "ds_number": {"$ne": None},
+                        "ds_entries.v.q_std": {"$gte": 0}
+                    }
+                },
+                
+                # Группировка и сбор значений
+                {
+                    "$group": {
+                        "_id": {
+                            "cluster": "$cluster",
+                            "ds_number": "$ds_number"
+                        },
+                        "values": {"$push": "$ds_entries.v.q_std"}
+                    }
+                },
+                
+                # Форматирование вывода
+                {
+                    "$project": {
+                        "_id": 0,
+                        "cluster": "$_id.cluster",
+                        "ds": "$_id.ds_number",
+                        "values": 1
+                    }
+                }
+            ]
 
-    
+            result = list(collection.aggregate(pipeline))
+            if result:
+                return result
+            else:
+                return None

@@ -9,7 +9,7 @@ class MetricDefinition(BaseModel):
     alias: str = Field(...)
     name: str = Field(...)
     description: str = Field(default='')
-    labels: tuple[str] = Field(default=tuple())
+    labels: tuple[str, ...] = Field(default=tuple())
 
 class Metric(BaseModel):
     alias: str = Field(...)

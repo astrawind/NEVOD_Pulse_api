@@ -9,8 +9,7 @@ import os
 class HVHandler:
     
     def __init__(self, file_directory=settings.HV_DIRECTORY):
-        current_date = datetime.now()
-        file_directory = f'{file_directory}/{current_date.year}/{current_date.month:02}'
+        file_directory = f'{file_directory}'
         if os.path.exists(file_directory):
             self.dir = file_directory
         else:
@@ -18,7 +17,7 @@ class HVHandler:
 
     def get_last_record(self, date) -> HVItem:
         try:
-            hv_items_generator = read_last_lines(f'{self.dir}/hv{date.year}{date.month:02}{date.day}.log')
+            hv_items_generator = read_last_lines(f'{self.dir}/{date.year}/{date.month:02}/hv{date.year}{date.month:02}{date.day:02}.log')
         except FileNotFoundError:
             return None
         line = next(hv_items_generator)

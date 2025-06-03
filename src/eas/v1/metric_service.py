@@ -65,8 +65,8 @@ class EASMetricHistogramService(MetricService):
                 ds = q_valuses['ds']
                 max_x = max(q_valuses['values'])
                 min_x = min(q_valuses['values'])
-                hist, x = np.histogram(q_valuses['values'], np.arange(min_x - 0.5 * bin_width, max_x + 0.5 * bin_width + bin_width, bin_width))
-                bins = [round(0.5 * (x[i] + x[i + 1]), round_number) for i in range(len(y))]
+                hist, x = np.histogram(q_valuses['values'], np.arrange(np.arange(min_x - 0.5 * bin_width, max_x + 0.5 * bin_width + bin_width, bin_width)))
+                bins = [round(0.5 * (x[i] + x[i + 1]), round_number) for i in range(len(hist))]
                 result.extend([make_hist_metric(metric_name, cluster, ds, bucket, value) for value, bucket in zip(hist, bins[:-1])])
         else:
             result = None

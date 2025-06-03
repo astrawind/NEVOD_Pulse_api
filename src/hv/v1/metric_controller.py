@@ -11,6 +11,6 @@ class HVMetricCollector(GaugeMetricCollector):
         for chan in channel_names:
             chan = str(chan)
             for atribute, unit in zip(attributes, units): 
-                result.append((make_unique_metric_alias(chan, atribute), f'hv_{chan.replace('DECOR00-03', 'DECOR00_03').replace('DECOR12-15', 'DECOR12_15').lower()}_{atribute.lower()}_{unit}', ''))
+                result.append((make_unique_metric_alias(chan, atribute), f"hv_{chan.replace('DECOR00-03', 'DECOR00_03').replace('DECOR12-15', 'DECOR12_15').lower()}_{atribute.lower()}_{unit}", ''))
         return result
         

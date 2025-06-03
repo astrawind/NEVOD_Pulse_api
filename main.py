@@ -4,7 +4,7 @@ import uvicorn
 from src.main import create_app
 from src.config import settings
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("uvicorn_main")
 
 app = create_app()

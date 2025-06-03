@@ -58,13 +58,13 @@ class EASMetricHistogramService(MetricService):
     def _prepare_metric(self, metric_name, container):
         round_number = 2
         bin_width = 1
+        min_x = 0
+        max_x = 50
         if container is not None:
             result = list()
             for q_valuses in container:
                 cluster = q_valuses['cluster']
                 ds = q_valuses['ds']
-                max_x = max(q_valuses['values'])
-                min_x = min(q_valuses['values'])
                 hist, x = np.histogram(q_valuses['values'], np.arange(min_x - 0.5 * bin_width, max_x + 0.5 * bin_width + bin_width, bin_width))
                 bins = [round(0.5 * (x[i] + x[i + 1]), round_number) for i in range(len(hist))]
                 result.extend([make_hist_metric(metric_name, cluster, ds, bucket, value) for value, bucket in zip(hist, bins[:-1])])

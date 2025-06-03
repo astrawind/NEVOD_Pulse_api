@@ -4,6 +4,7 @@ from .repository import EASRepository
 from .utils import get_eas_metric_alias
 from .config import settings
 from datetime import datetime, timedelta
+import numpy as np
 
 def make_metric(metric_name, cluser, value) -> Metric:
     if cluser is None:
@@ -17,10 +18,10 @@ def make_metric(metric_name, cluser, value) -> Metric:
         value=value
         )
 
-def make_hist_metric(metric_name, cluster, ds, value):
+def make_hist_metric(metric_name, cluster, ds, bucket, value):
     return Metric(
         alias=metric_name,
-        labels=(cluster, ds),
+        labels=(cluster, ds, bucket),
         value=value
         )
     
@@ -45,7 +46,7 @@ class EASMetricService(MetricService):
     
 class EASMetricHistogramService(MetricService):
     
-    def __init__(self, db: EASRepository, metric: HistogramManager):
+    def __init__(self, db: EASRepository, metric: GaugeManager):
         super().__init__(metric)
         self._db: EASRepository = db
         
@@ -55,12 +56,14 @@ class EASMetricHistogramService(MetricService):
         return charge_metrics
     
     def _prepare_metric(self, metric_name, container):
+        EAS_HIST_BINS_RANGE = 51
         if container is not None:
             result = list()
             for q_valuses in container:
                 cluster = q_valuses['cluster']
                 ds = q_valuses['ds']
-                result.extend([make_hist_metric(metric_name, cluster, ds, value) for value in q_valuses['values']])
+                hist, bins = np.histogram(q_valuses['values'], bins=list(range(EAS_HIST_BINS_RANGE)))
+                result.extend([make_hist_metric(metric_name, cluster, ds, bucket, value) for value, bucket in zip(hist, bins[:-1])])
         else:
             result = None
         return result

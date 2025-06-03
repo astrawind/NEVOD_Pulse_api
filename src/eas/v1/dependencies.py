@@ -22,7 +22,7 @@ def create_metric_registry() -> MetricRegistry:
 
 def create_gauge_manager(registry: MetricRegistry = Depends(create_metric_registry)) -> GaugeManager:
     metrics_definitions = make_metric_definitions([
-        (('quality_rate', 'persents'), '{Number of "good" events} / {number of all events}', ('cluster'))
+        (('quality_rate', 'persents'), '{Number of "good" events} / {number of all events}', ('cluster',))
     ])
     return GaugeManager(metrics_definitions, registry)
 
@@ -37,12 +37,15 @@ def create_metric_service(
     )
     
 def create_histogram_manager(registry: MetricRegistry = Depends(create_metric_registry)) -> HistogramManager:
-    metrics_definitions = [HistogramMetricDefinition(alias = 'q_distribution', name = 'eas_q_distribution_coulombs', description = 'distributions of charge in eas', labels = ('cluster', 'ds'), buckets = list(range(51)))]
-    return HistogramManager(metrics_definitions, registry)
+    # metrics_definitions = [HistogramMetricDefinition(alias = 'q_distribution', name = 'eas_q_distribution_coulombs', description = 'distributions of charge in eas', labels = ('cluster', 'ds'), buckets = list(range(51)))]
+    metrics_definitions = make_metric_definitions([
+        (('q_distribution', 'coulombs'), 'distributions of charge in eas', ('cluster', 'ds', 'bucket'))
+    ])
+    return GaugeManager(metrics_definitions, registry)
 
 def create_histogram_metric_service(
     repo: EASRepository = Depends(create_repository),
-    hist: HistogramManager = Depends(create_histogram_manager)
+    hist: GaugeManager = Depends(create_histogram_manager)
 ) -> EASMetricHistogramService:
     return EASMetricHistogramService(
         db=repo,

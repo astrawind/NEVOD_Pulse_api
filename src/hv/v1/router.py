@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 files_handler = HVHandler(settings.HV_DIRECTORY)
-metric_collector = HVMetricCollector(["Uragan01", "Uragan02", "Uragan03", "Uragan04", "DECOR00_03", "DECOR12_15", "DECOR04", "DECOR08"],
+metric_collector = HVMetricCollector(["Uragan01", "Uragan02", "Uragan03", "Uragan04", "DECOR00-03", "DECOR12-15", "DECOR04", "DECOR08"],
                                      ["Vmon", "Imon", "V0set", "I0set"], ["volt", "ampere", "volt", "ampere"])
 service = HVMetricService(metric_collector, files_handler)
 

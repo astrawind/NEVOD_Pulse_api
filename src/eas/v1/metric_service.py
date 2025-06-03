@@ -56,13 +56,17 @@ class EASMetricHistogramService(MetricService):
         return charge_metrics
     
     def _prepare_metric(self, metric_name, container):
-        EAS_HIST_BINS_RANGE = 51
+        round_number = 2
+        bin_width = 1
         if container is not None:
             result = list()
             for q_valuses in container:
                 cluster = q_valuses['cluster']
                 ds = q_valuses['ds']
-                hist, bins = np.histogram(q_valuses['values'], bins=list(range(EAS_HIST_BINS_RANGE)))
+                max_x = max(q_valuses['values'])
+                min_x = min(q_valuses['values'])
+                hist, x = np.histogram(q_valuses['values'], np.arrange(np.arange(min_x - 0.5 * bin_width, max_x + 0.5 * bin_width + bin_width, bin_width)))
+                bins = [round(0.5 * (x[i] + x[i + 1]), round_number) for i in range(len(y))]
                 result.extend([make_hist_metric(metric_name, cluster, ds, bucket, value) for value, bucket in zip(hist, bins[:-1])])
         else:
             result = None

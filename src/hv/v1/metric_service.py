@@ -10,8 +10,8 @@ class HVMetricService:
         self._controller: HVHandler = controller
         
     def collect_last_metrics(self) -> dict:
-        last_record = self._controller.get_last_record(datetime.now().date())
-        if False and (last_record is None or (datetime.now() - last_record.time > timedelta(seconds=settings.HV_STEP))):
+        last_record = self._controller.get_last_record(datetime.utcnow().date())
+        if False and (last_record is None or (datetime.utcnow() - last_record.time > timedelta(seconds=settings.HV_STEP))):
             return None
         result = dict()
         for chan in last_record.chans:
